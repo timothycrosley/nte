@@ -34,3 +34,7 @@ line-length = 100
 
 [tool.isort]
 profile = "hug"
+
+[tool.poetry.scripts]
+nte = "nte.main:app"
+note = "nte.main:app"
