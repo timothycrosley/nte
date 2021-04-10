@@ -37,6 +37,13 @@ def _set(key: str, value: str, overwrite: bool=False):
 
 
 @app.command()
+def more(key: str, value: str, prefix: str="\n"):
+    with (NOTE_PATH / key).open("a") as note_file:
+        note_file.write(prefix)
+        note_file.write(value)
+
+
+@app.command()
 def get(key: str):
     typer.echo(note_value(key))
 
