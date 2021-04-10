@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from subprocess import call
+from datetime import date
 
 import typer
 
@@ -13,6 +14,7 @@ NOTES_CONFIG = (
 )
 NOTES_CONFIG["notes_dir"].mkdir(parents=True, exist_ok=True)
 NOTE_PATH = NOTES_CONFIG["notes_dir"]
+TODAY = date.today().isoformat()
 
 app = typer.Typer()
 
@@ -37,10 +39,24 @@ def _set(key: str, value: str, overwrite: bool=False):
 
 
 @app.command()
-def more(key: str, value: str, prefix: str="\n"):
-    with (NOTE_PATH / key).open("a") as note_file:
-        note_file.write(prefix)
-        note_file.write(value)
+def more(key: str, value: str, sep: str="\n"):
+    note_file = NOTE_PATH / key
+    if not note_file.exists():
+        note_file.write_text(value)
+    else:
+        with note_file.open("a") as note_file:
+            note_file.write(sep)
+            note_file.write(value)
+
+
+@app.command()
+def that(value: str):
+    more(TODAY, value)
+
+
+@app.command()
+def for_today():
+    get(TODAY)
 
 
 @app.command()
