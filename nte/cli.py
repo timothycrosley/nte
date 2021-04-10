@@ -16,6 +16,9 @@ def save():
 
 @app.command()
 def set(key: str, value: str):
+    existing_value = data.get(key, {"value": None})["value"]
+    if existing_value and not typer.confirm(f"Replace existing value for {key}: {existing_value}."):
+        raise typer.Abort()
     data[key] = {"value": value}
     save()
 
