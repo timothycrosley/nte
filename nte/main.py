@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 from subprocess import call
 from datetime import date
@@ -6,7 +7,8 @@ from datetime import date
 import typer
 
 NOTES_CONFIG_FILE = Path("~/.nte_config.json").expanduser()
-NOTES_CONFIG_DEFAULT = {"notes_dir": Path("~/.ntes").expanduser()}
+NOTES_CONFIG_DEFAULT = {"notes_dir": Path("~/.ntes").expanduser(),
+                        "editor": os.environ.get("EDITOR", "vim")}
 NOTES_CONFIG = (
     json.loads(NOTES_CONFIG_FILE.read_text())
     if NOTES_CONFIG_FILE.is_file()
@@ -17,9 +19,6 @@ NOTE_PATH = NOTES_CONFIG["notes_dir"]
 TODAY = date.today().isoformat()
 
 app = typer.Typer()
-
-def save():
-    Path(NOTES_CONFIG["datafile"]).write_text(json.dumps(data))
 
 
 def note_value(key: str) -> str:
@@ -37,6 +36,9 @@ def _set(key: str, value: str, overwrite: bool=False):
         raise typer.Abort()
     note_file.write_text(value)
 
+@app.command()
+def edit(key: str, using: str=NOTES_CONFIG["editor"]):
+    call((using, NOTE_PATH / key))
 
 @app.command()
 def more(key: str, value: str, sep: str="\n"):
@@ -52,6 +54,11 @@ def more(key: str, value: str, sep: str="\n"):
 @app.command()
 def that(value: str):
     more(TODAY, value)
+
+
+@app.command()
+def book(using: str=NOTES_CONFIG["editor"]):
+    edit(TODAY, using=using)
 
 
 @app.command()
