@@ -1,7 +1,9 @@
+import functools
 import json
 import os
 import shutil
 import stat
+from contextlib import contextmanager
 from datetime import date, datetime
 from pathlib import Path
 from subprocess import call
@@ -34,8 +36,40 @@ def note_value(key: str) -> str:
     return note_file.read_text()
 
 
+def before():
+    run_before = NOTES_CONFIG.get("before", "")
+    if run_before:
+        call(run_before, shell=True, cwd=NOTE_PATH)
+
+
+def after():
+    run_after = NOTES_CONFIG.get("after", "")
+    if run_after:
+        call(run_after, shell=True, cwd=NOTE_PATH)
+
+
+@contextmanager
+def config_context():
+    before()
+    yield
+    after()
+
+
+def configured_environment(func):
+    @functools.wraps(func)
+    def wrapped_function(*args, **kwargs):
+        before()
+        value = func(*args, **kwargs)
+        after()
+        return value
+
+    return wrapped_function
+
+
 @app.command(name="set")
+@configured_environment
 def _set(key: str, value: str, overwrite: bool = False):
+    call(note_value(key), shell=True)
     note_file = NOTE_PATH / key
     if note_file.exists() and not (overwrite or typer.confirm(f"Replace existing note for {key}.")):
         raise typer.Abort()
@@ -43,47 +77,56 @@ def _set(key: str, value: str, overwrite: bool = False):
 
 
 @app.command()
+@configured_environment
 def edit(key: str, using: str = NOTES_CONFIG["editor"]):
     call((using, NOTE_PATH / key))
 
 
 @app.command()
+@configured_environment
 def more(key: str, value: str, sep: str = "\n"):
-    note_file = NOTE_PATH / key
-    if not note_file.exists():
-        note_file.write_text(value)
-    else:
-        with note_file.open("a") as note_file:
-            note_file.write(sep)
-            note_file.write(value)
+    with config_context():
+        note_file = NOTE_PATH / key
+        if not note_file.exists():
+            note_file.write_text(value)
+        else:
+            with note_file.open("a") as note_file:
+                note_file.write(sep)
+                note_file.write(value)
 
 
 @app.command()
+@configured_environment
 def that(value: str):
     more(TODAY, value)
 
 
 @app.command()
+@configured_environment
 def book(using: str = NOTES_CONFIG["editor"]):
     edit(TODAY, using=using)
 
 
 @app.command()
+@configured_environment
 def today():
     get(TODAY)
 
 
 @app.command()
+@configured_environment
 def get(key: str):
     typer.echo(note_value(key))
 
 
 @app.command()
+@configured_environment
 def todo(task: str, key: str = "TODOS"):
     more(key, f"- [ ] {task}")
 
 
 @app.command()
+@configured_environment
 def done(task: str, key: str = "TODOS"):
     _set(
         key,
@@ -93,6 +136,7 @@ def done(task: str, key: str = "TODOS"):
 
 
 @app.command()
+@configured_environment
 def clear_done(key: str = "TODOS"):
     _set(
         key,
@@ -105,10 +149,12 @@ def clear_done(key: str = "TODOS"):
 
 @app.command()
 def todos(key: str = "TODOS"):
+    before()
     get(key)
 
 
 @app.command()
+@configured_environment
 def run(key: str):
     call(note_value(key), shell=True)
     note_file = NOTE_PATH / key
@@ -117,6 +163,7 @@ def run(key: str):
 
 @app.command()
 def recent(amount: int = 10, lines: int = 3):
+    before()
     for note_file in sorted(NOTE_PATH.glob("*"), key=os.path.getctime, reverse=True)[:amount]:
         if os.access(note_file, os.X_OK):
             typer.secho(note_file.name, bg=typer.colors.GREEN, fg=typer.colors.WHITE)
@@ -148,6 +195,7 @@ def recent(amount: int = 10, lines: int = 3):
 
 @app.command()
 def ls():
+    before()
     for note_file in sorted(NOTE_PATH.glob("*"), key=os.path.getctime, reverse=True):
         if os.access(note_file, os.X_OK):
             typer.secho(note_file.name, fg=typer.colors.GREEN)
@@ -156,22 +204,26 @@ def ls():
 
 
 @app.command()
+@configured_environment
 def event(key: str, details: str = ""):
     more(f"{key}_events", value=f"- *{NOW}* {details}".rstrip())
 
 
 @app.command()
 def events(key: str, details: str = ""):
+    before()
     for line in reversed(note_value(f"{key}_events").splitlines()):
         typer.echo(line)
 
 
 @app.command()
+@configured_environment
 def edit_events(key: str, using: str = NOTES_CONFIG["editor"]):
     edit(f"{key}_events")
 
 
 @app.command()
+@configured_environment
 def delete(key: str):
     (NOTE_PATH / key).unlink()
 
