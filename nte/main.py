@@ -171,5 +171,10 @@ def edit_events(key: str, using: str = NOTES_CONFIG["editor"]):
     edit(f"{key}_events")
 
 
+@app.command()
+def delete(key: str):
+    (NOTE_PATH / key).unlink()
+
+
 if __name__ == "__main__":
     app()
