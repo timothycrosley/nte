@@ -1,10 +1,10 @@
 import json
 import os
+import shutil
+import stat
 from datetime import date, datetime
 from pathlib import Path
 from subprocess import call
-import stat
-import shutil
 
 import typer
 
@@ -125,12 +125,24 @@ def recent(amount: int = 10, lines: int = 3):
         with note_file.open("r") as note_file_handle:
             for index, line in enumerate(note_file_handle.readlines()):
                 if index >= lines:
-                    typer.secho(f" {index + 1} ", nl=False, fg=typer.colors.WHITE, bg=typer.colors.YELLOW)
-                    typer.secho(" ...".ljust(shutil.get_terminal_size().columns - 3), fg=typer.colors.BLACK, bg=typer.colors.WHITE)
+                    typer.secho(
+                        f" {index + 1} ", nl=False, fg=typer.colors.WHITE, bg=typer.colors.YELLOW
+                    )
+                    typer.secho(
+                        " ...".ljust(shutil.get_terminal_size().columns - 3),
+                        fg=typer.colors.BLACK,
+                        bg=typer.colors.WHITE,
+                    )
                     break
                 else:
-                    typer.secho(f" {index + 1} ", nl=False, fg=typer.colors.WHITE, bg=typer.colors.YELLOW)
-                    typer.secho(f" {line.rstrip()}".ljust(shutil.get_terminal_size().columns - 3), fg=typer.colors.BLACK, bg=typer.colors.WHITE)
+                    typer.secho(
+                        f" {index + 1} ", nl=False, fg=typer.colors.WHITE, bg=typer.colors.YELLOW
+                    )
+                    typer.secho(
+                        f" {line.rstrip()}".ljust(shutil.get_terminal_size().columns - 3),
+                        fg=typer.colors.BLACK,
+                        bg=typer.colors.WHITE,
+                    )
         typer.echo("")
 
 
