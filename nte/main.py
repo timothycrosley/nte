@@ -134,7 +134,10 @@ def recent(amount: int = 10, lines: int = 3):
 @app.command()
 def ls():
     for note_file in sorted(NOTE_PATH.glob("*"), key=os.path.getctime, reverse=True):
-        typer.echo(note_file.name)
+        if os.access(note_file, os.X_OK):
+            typer.secho(note_file.name, fg=typer.colors.GREEN)
+        else:
+            typer.echo(note_file.name)
 
 
 if __name__ == "__main__":
