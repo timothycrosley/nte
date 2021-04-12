@@ -4,6 +4,7 @@ from datetime import date, datetime
 from pathlib import Path
 from subprocess import call
 import stat
+import shutil
 
 import typer
 
@@ -124,10 +125,12 @@ def recent(amount: int = 10, lines: int = 3):
         with note_file.open("r") as note_file_handle:
             for index, line in enumerate(note_file_handle.readlines()):
                 if index >= lines:
-                    print("...")
+                    typer.secho(f" {index + 1} ", nl=False, fg=typer.colors.WHITE, bg=typer.colors.YELLOW)
+                    typer.secho(" ...".ljust(shutil.get_terminal_size().columns - 3), fg=typer.colors.BLACK, bg=typer.colors.WHITE)
                     break
                 else:
-                    typer.echo(line.rstrip())
+                    typer.secho(f" {index + 1} ", nl=False, fg=typer.colors.WHITE, bg=typer.colors.YELLOW)
+                    typer.secho(f" {line.rstrip()}".ljust(shutil.get_terminal_size().columns - 3), fg=typer.colors.BLACK, bg=typer.colors.WHITE)
         typer.echo("")
 
 
