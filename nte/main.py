@@ -1,14 +1,16 @@
 import json
 import os
+from datetime import date, datetime
 from pathlib import Path
 from subprocess import call
-from datetime import date
 
 import typer
 
 NOTES_CONFIG_FILE = Path("~/.nte_config.json").expanduser()
-NOTES_CONFIG_DEFAULT = {"notes_dir": Path("~/.ntes").expanduser(),
-                        "editor": os.environ.get("EDITOR", "vim")}
+NOTES_CONFIG_DEFAULT = {
+    "notes_dir": Path("~/.ntes").expanduser(),
+    "editor": os.environ.get("EDITOR", "vim"),
+}
 NOTES_CONFIG = (
     json.loads(NOTES_CONFIG_FILE.read_text())
     if NOTES_CONFIG_FILE.is_file()
@@ -17,6 +19,7 @@ NOTES_CONFIG = (
 NOTES_CONFIG["notes_dir"].mkdir(parents=True, exist_ok=True)
 NOTE_PATH = NOTES_CONFIG["notes_dir"]
 TODAY = date.today().isoformat()
+NOW = datetime.now().isoformat()
 
 app = typer.Typer()
 
@@ -30,18 +33,20 @@ def note_value(key: str) -> str:
 
 
 @app.command(name="set")
-def _set(key: str, value: str, overwrite: bool=False):
+def _set(key: str, value: str, overwrite: bool = False):
     note_file = NOTE_PATH / key
     if note_file.exists() and not (overwrite or typer.confirm(f"Replace existing note for {key}.")):
         raise typer.Abort()
     note_file.write_text(value)
 
-@app.command()
-def edit(key: str, using: str=NOTES_CONFIG["editor"]):
-    call((using, NOTE_PATH / key))
 
 @app.command()
-def more(key: str, value: str, sep: str="\n"):
+def edit(key: str, using: str = NOTES_CONFIG["editor"]):
+    call((using, NOTE_PATH / key))
+
+
+@app.command()
+def more(key: str, value: str, sep: str = "\n"):
     note_file = NOTE_PATH / key
     if not note_file.exists():
         note_file.write_text(value)
@@ -57,7 +62,7 @@ def that(value: str):
 
 
 @app.command()
-def book(using: str=NOTES_CONFIG["editor"]):
+def book(using: str = NOTES_CONFIG["editor"]):
     edit(TODAY, using=using)
 
 
@@ -69,6 +74,36 @@ def for_today():
 @app.command()
 def get(key: str):
     typer.echo(note_value(key))
+
+
+@app.command()
+def todo(task: str, key: str = "TODOS"):
+    more(key, f"- [ ] {task}")
+
+
+@app.command()
+def done(task: str, key: str = "TODOS"):
+    _set(
+        key,
+        note_value(key).replace(f"- [ ] {task}", f"- [x] {task} (Completed: {NOW})", 1),
+        overwrite=True,
+    )
+
+
+@app.command()
+def clear_done(key: str = "TODOS"):
+    _set(
+        key,
+        "\n".join(
+            line for line in note_value(key).splitlines() if line and not line.startswith("- [x]")
+        ),
+        overwrite=True,
+    )
+
+
+@app.command()
+def todos(key: str = "TODOS"):
+    get(key)
 
 
 @app.command()
