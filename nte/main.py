@@ -3,6 +3,7 @@ import os
 from datetime import date, datetime
 from pathlib import Path
 from subprocess import call
+import stat
 
 import typer
 
@@ -109,12 +110,17 @@ def todos(key: str = "TODOS"):
 @app.command()
 def run(key: str):
     call(note_value(key), shell=True)
+    note_file = NOTE_PATH / key
+    os.chmod(note_file, os.stat(note_file).st_mode | stat.S_IEXEC)
 
 
 @app.command()
 def recent(amount: int = 10, lines: int = 3):
-    for note_file in sorted(NOTE_PATH.glob("*"), key=os.path.getctime)[:amount]:
-        typer.secho(note_file.name, bg=typer.colors.BLUE, fg=typer.colors.WHITE)
+    for note_file in sorted(NOTE_PATH.glob("*"), key=os.path.getctime, reverse=True)[:amount]:
+        if os.access(note_file, os.X_OK):
+            typer.secho(note_file.name, bg=typer.colors.GREEN, fg=typer.colors.WHITE)
+        else:
+            typer.secho(note_file.name, bg=typer.colors.BLUE, fg=typer.colors.WHITE)
         with note_file.open("r") as note_file_handle:
             for index, line in enumerate(note_file_handle.readlines()):
                 if index >= lines:
@@ -127,7 +133,7 @@ def recent(amount: int = 10, lines: int = 3):
 
 @app.command()
 def ls():
-    for note_file in sorted(NOTE_PATH.glob("*"), key=os.path.getctime):
+    for note_file in sorted(NOTE_PATH.glob("*"), key=os.path.getctime, reverse=True):
         typer.echo(note_file.name)
 
 
