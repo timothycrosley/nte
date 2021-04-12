@@ -111,5 +111,20 @@ def run(key: str):
     call(note_value(key), shell=True)
 
 
+@app.command()
+def recent(amount: int = 10, lines: int = 3):
+    for note_file in sorted(NOTE_PATH.glob("*"), key=os.path.getctime)[:amount]:
+        typer.secho(note_file.name, bg=typer.colors.BLUE, fg=typer.colors.WHITE)
+        with note_file.open("r") as note_file_handle:
+            for index, line in enumerate(note_file_handle.readlines()):
+                if index >= lines:
+                    print("...")
+                    break
+                else:
+                    typer.echo(line.rstrip())
+        typer.echo("")
+
+
+
 if __name__ == "__main__":
     app()
