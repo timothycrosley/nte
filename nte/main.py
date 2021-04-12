@@ -69,7 +69,7 @@ def book(using: str = NOTES_CONFIG["editor"]):
 
 
 @app.command()
-def for_today():
+def today():
     get(TODAY)
 
 
@@ -153,6 +153,22 @@ def ls():
             typer.secho(note_file.name, fg=typer.colors.GREEN)
         else:
             typer.echo(note_file.name)
+
+
+@app.command()
+def event(key: str, details: str = ""):
+    more(f"{key}_events", value=f"- *{NOW}* {details}".rstrip())
+
+
+@app.command()
+def events(key: str, details: str = ""):
+    for line in reversed(note_value(f"{key}_events").splitlines()):
+        typer.echo(line)
+
+
+@app.command()
+def edit_events(key: str, using: str = NOTES_CONFIG["editor"]):
+    edit(f"{key}_events")
 
 
 if __name__ == "__main__":
