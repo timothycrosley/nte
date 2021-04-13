@@ -15,11 +15,13 @@ NOTES_CONFIG_DEFAULT = {
     "notes_dir": Path("~/.ntes").expanduser(),
     "editor": os.environ.get("EDITOR", "vim"),
 }
-NOTES_CONFIG = (
-    json.loads(NOTES_CONFIG_FILE.read_text())
-    if NOTES_CONFIG_FILE.is_file()
-    else NOTES_CONFIG_DEFAULT
-)
+if NOTES_CONFIG_FILE.is_file():
+    NOTES_CONFIG = {
+        **NOTES_CONFIG_DEFAULT,
+        **json.loads(NOTES_CONFIG_FILE.read_text())
+    }
+else:
+    NOTES_CONFIG = NOTES_CONFIG_DEFAULT
 NOTE_PATH = Path(NOTES_CONFIG["notes_dir"])
 NOTE_PATH.mkdir(parents=True, exist_ok=True)
 TODAY = date.today().isoformat()
