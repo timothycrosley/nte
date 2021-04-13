@@ -20,8 +20,8 @@ NOTES_CONFIG = (
     if NOTES_CONFIG_FILE.is_file()
     else NOTES_CONFIG_DEFAULT
 )
-NOTES_CONFIG["notes_dir"].mkdir(parents=True, exist_ok=True)
-NOTE_PATH = NOTES_CONFIG["notes_dir"]
+NOTE_PATH = Path(NOTES_CONFIG["notes_dir"])
+NOTE_PATH.mkdir(parents=True, exist_ok=True)
 TODAY = date.today().isoformat()
 NOW = datetime.now().isoformat()
 
