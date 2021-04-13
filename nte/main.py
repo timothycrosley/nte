@@ -9,6 +9,8 @@ from pathlib import Path
 from subprocess import DEVNULL, call
 
 import typer
+from rich.console import Console
+from rich.markdown import Markdown
 
 NOTES_CONFIG_FILE = Path("~/.nte_config.json").expanduser()
 NOTES_CONFIG_DEFAULT = {
@@ -16,10 +18,7 @@ NOTES_CONFIG_DEFAULT = {
     "editor": os.environ.get("EDITOR", "vim"),
 }
 if NOTES_CONFIG_FILE.is_file():
-    NOTES_CONFIG = {
-        **NOTES_CONFIG_DEFAULT,
-        **json.loads(NOTES_CONFIG_FILE.read_text())
-    }
+    NOTES_CONFIG = {**NOTES_CONFIG_DEFAULT, **json.loads(NOTES_CONFIG_FILE.read_text())}
 else:
     NOTES_CONFIG = NOTES_CONFIG_DEFAULT
 NOTE_PATH = Path(NOTES_CONFIG["notes_dir"])
@@ -118,7 +117,9 @@ def today():
 @app.command()
 @configured_environment
 def get(key: str):
-    typer.echo(note_value(key))
+    console = Console()
+    markdown = Markdown(note_value(key))
+    console.print(markdown)
 
 
 @app.command()
@@ -166,7 +167,11 @@ def run(key: str):
 @app.command()
 def recent(amount: int = 10, lines: int = 3):
     before()
-    for note_file in sorted(NOTE_PATH.glob("*"), key=os.path.getctime, reverse=True)[:amount]:
+    for note_file in sorted(
+        [path for path in NOTE_PATH.glob("*") if not path.name.startswith(".")],
+        key=os.path.getctime,
+        reverse=True,
+    )[:amount]:
         if os.access(note_file, os.X_OK):
             typer.secho(note_file.name, bg=typer.colors.GREEN, fg=typer.colors.WHITE)
         else:
@@ -198,7 +203,11 @@ def recent(amount: int = 10, lines: int = 3):
 @app.command()
 def ls():
     before()
-    for note_file in sorted(NOTE_PATH.glob("*"), key=os.path.getctime, reverse=True):
+    for note_file in sorted(
+        [path for path in NOTE_PATH.glob("*") if not path.name.startswith(".")],
+        key=os.path.getctime,
+        reverse=True,
+    ):
         if os.access(note_file, os.X_OK):
             typer.secho(note_file.name, fg=typer.colors.GREEN)
         else:
