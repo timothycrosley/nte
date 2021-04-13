@@ -6,7 +6,7 @@ import stat
 from contextlib import contextmanager
 from datetime import date, datetime
 from pathlib import Path
-from subprocess import call
+from subprocess import DEVNULL, call
 
 import typer
 
@@ -39,13 +39,13 @@ def note_value(key: str) -> str:
 def before():
     run_before = NOTES_CONFIG.get("before", "")
     if run_before:
-        call(run_before, shell=True, cwd=NOTE_PATH)
+        call(run_before, shell=True, cwd=NOTE_PATH, stdout=DEVNULL, stderr=DEVNULL)
 
 
 def after():
     run_after = NOTES_CONFIG.get("after", "")
     if run_after:
-        call(run_after, shell=True, cwd=NOTE_PATH)
+        call(run_after, shell=True, cwd=NOTE_PATH, stdout=DEVNULL, stderr=DEVNULL)
 
 
 @contextmanager
