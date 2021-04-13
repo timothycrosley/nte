@@ -9,6 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.6"
 colorama = "^0.4.4"
+typer = "^0.3.2"
 
 [tool.poetry.dev-dependencies]
 vulture = "^1.0"
