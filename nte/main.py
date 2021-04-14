@@ -3,6 +3,7 @@ import json
 import os
 import shutil
 import stat
+import random
 from contextlib import contextmanager
 from datetime import date, datetime
 from pathlib import Path
@@ -117,9 +118,13 @@ def today():
 @app.command()
 @configured_environment
 def get(key: str):
-    console = Console()
-    markdown = Markdown(note_value(key))
-    console.print(markdown)
+    Console().print(Markdown(note_value(key)))
+
+
+@app.command("random")
+@configured_environment
+def _random(key: str):
+    Console().print(Markdown( random.choice(note_value(key).splitlines())))
 
 
 @app.command()
