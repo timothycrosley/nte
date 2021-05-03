@@ -13,6 +13,8 @@ import typer
 from rich.console import Console
 from rich.markdown import Markdown
 
+from functools import lru_cache
+
 NOTES_CONFIG_FILE = Path("~/.nte_config.json").expanduser()
 NOTES_CONFIG_DEFAULT = {
     "notes_dir": Path("~/.ntes").expanduser(),
@@ -38,12 +40,14 @@ def note_value(key: str) -> str:
     return note_file.read_text()
 
 
+@lru_cache
 def before():
     run_before = NOTES_CONFIG.get("before", "")
     if run_before:
         call(run_before, shell=True, cwd=NOTE_PATH, stdout=DEVNULL, stderr=DEVNULL)
 
 
+@lru_cache
 def after():
     run_after = NOTES_CONFIG.get("after", "")
     if run_after:
@@ -60,10 +64,8 @@ def config_context():
 def configured_environment(func):
     @functools.wraps(func)
     def wrapped_function(*args, **kwargs):
-        before()
-        value = func(*args, **kwargs)
-        after()
-        return value
+        with config_context():
+            return func(*args, **kwargs)
 
     return wrapped_function
 
@@ -71,7 +73,6 @@ def configured_environment(func):
 @app.command(name="set")
 @configured_environment
 def _set(key: str, value: str, overwrite: bool = False):
-    call(note_value(key), shell=True)
     note_file = NOTE_PATH / key
     if note_file.exists() and not (overwrite or typer.confirm(f"Replace existing note for {key}.")):
         raise typer.Abort()
@@ -87,14 +88,13 @@ def edit(key: str, using: str = NOTES_CONFIG["editor"]):
 @app.command()
 @configured_environment
 def more(key: str, value: str, sep: str = "\n"):
-    with config_context():
-        note_file = NOTE_PATH / key
-        if not note_file.exists():
-            note_file.write_text(value)
-        else:
-            with note_file.open("a") as note_file:
-                note_file.write(sep)
-                note_file.write(value)
+    note_file = NOTE_PATH / key
+    if not note_file.exists():
+        note_file.write_text(value)
+    else:
+        with note_file.open("a") as note_file:
+            note_file.write(sep)
+            note_file.write(value)
 
 
 @app.command()
