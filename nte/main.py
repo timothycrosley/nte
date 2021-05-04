@@ -53,6 +53,17 @@ def after():
         call(run_after, shell=True, cwd=NOTE_PATH, stdout=DEVNULL, stderr=DEVNULL)
 
 
+@app.command()
+@lru_cache
+def sync():
+    sync = NOTES_CONFIG.get("sync", "")
+    if sync:
+        call(sync, shell=True, cwd=NOTE_PATH, stdout=DEVNULL, stderr=DEVNULL)
+    else:
+        before()
+        after()
+
+
 @contextmanager
 def config_context():
     before()
