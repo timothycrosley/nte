@@ -1,19 +1,18 @@
 import functools
 import json
 import os
+import random
 import shutil
 import stat
-import random
 from contextlib import contextmanager
 from datetime import date, datetime
+from functools import lru_cache
 from pathlib import Path
 from subprocess import DEVNULL, call
 
 import typer
 from rich.console import Console
 from rich.markdown import Markdown
-
-from functools import lru_cache
 
 NOTES_CONFIG_FILE = Path("~/.nte_config.json").expanduser()
 NOTES_CONFIG_DEFAULT = {
@@ -124,7 +123,7 @@ def get(key: str):
 @app.command("random")
 @configured_environment
 def _random(key: str):
-    Console().print(Markdown( random.choice(note_value(key).splitlines())))
+    Console().print(Markdown(random.choice(note_value(key).splitlines())))
 
 
 @app.command()
