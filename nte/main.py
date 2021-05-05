@@ -174,9 +174,9 @@ def todos(key: str = "TODOS"):
 @app.command()
 @configured_environment
 def run(key: str):
-    call(note_value(key), shell=True)
     note_file = NOTE_PATH / key
     os.chmod(note_file, os.stat(note_file).st_mode | stat.S_IEXEC)
+    call(note_value(key), shell=True)
 
 
 @app.command()
