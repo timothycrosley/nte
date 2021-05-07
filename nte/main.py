@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from datetime import date, datetime
 from functools import lru_cache
 from pathlib import Path
-from subprocess import DEVNULL, call
+from subprocess import DEVNULL, call, check_call
 
 import typer
 from rich.console import Console
@@ -252,6 +252,13 @@ def edit_events(key: str, using: str = NOTES_CONFIG["editor"]):
 @configured_environment
 def delete(key: str):
     (NOTE_PATH / key).unlink()
+
+
+@app.command()
+@configured_environment
+def grep(text):
+    check_call(("grep", "-Ri", text, NOTE_PATH))
+
 
 
 if __name__ == "__main__":
