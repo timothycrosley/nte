@@ -261,5 +261,11 @@ def grep(text):
 
 
 
+@app.command()
+@configured_environment
+def rg(text):
+    check_call(("rg", text, NOTE_PATH))
+
+
 if __name__ == "__main__":
     app()
