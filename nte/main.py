@@ -166,6 +166,18 @@ def clear_done(key: str = "TODOS"):
 
 
 @app.command()
+@configured_environment
+def todo_remove(task:str, key: str = "TODOS"):
+    _set(
+        key,
+        "\n".join(
+            line for line in note_value(key).splitlines() if line and not line.split("] ", 1)[1] == task
+        ),
+        overwrite=True,
+    )
+
+
+@app.command()
 def todos(key: str = "TODOS"):
     before()
     get(key)
