@@ -4,6 +4,7 @@ import os
 import random
 import shutil
 import stat
+import sys
 from contextlib import contextmanager
 from datetime import date, datetime
 from functools import lru_cache
@@ -145,10 +146,18 @@ def todo(task: str, key: str = "TODOS"):
 
 @app.command()
 @configured_environment
-def done(task: str, key: str = "TODOS"):
+def done(task: str, key: str = "TODOS", create: bool = False):
+    existing_todos = note_value(key)
+    if f"- [ ] {task}" not in existing_todos:
+        if create:
+            todo(task, key=key)
+        else:
+            sys.exit(
+                f"No task called {task} exists. To create it while marking it done use --create."
+            )
     _set(
         key,
-        note_value(key).replace(f"- [ ] {task}", f"- [x] {task} (Completed: {NOW})", 1),
+        existing_todos.replace(f"- [ ] {task}", f"- [x] {task} (Completed: {NOW})", 1),
         overwrite=True,
     )
 
@@ -167,11 +176,13 @@ def clear_done(key: str = "TODOS"):
 
 @app.command()
 @configured_environment
-def todo_remove(task:str, key: str = "TODOS"):
+def todo_remove(task: str, key: str = "TODOS"):
     _set(
         key,
         "\n".join(
-            line for line in note_value(key).splitlines() if line and not line.split("] ", 1)[1] == task
+            line
+            for line in note_value(key).splitlines()
+            if line and not line.split("] ", 1)[1] == task
         ),
         overwrite=True,
     )
@@ -270,7 +281,6 @@ def delete(key: str):
 @configured_environment
 def grep(text):
     check_call(("grep", "-Ri", text, NOTE_PATH))
-
 
 
 @app.command()
