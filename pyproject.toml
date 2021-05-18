@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nte"
-version = "0.0.5"
+version = "0.0.6"
 description = "A CLI scratch pad for notes, commands, lists, etc"
 authors = ["Timothy Crosley <timothy.crosley@gmail.com>"]
 license = "MIT"
