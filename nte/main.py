@@ -17,7 +17,7 @@ from rich.markdown import Markdown
 
 NOTES_CONFIG_FILE = Path("~/.nte_config.json").expanduser()
 NOTES_CONFIG_DEFAULT = {
-    "notes_dir": Path("~/.ntes").expanduser(),
+    "notes_dir": str(Path("~/.ntes").expanduser().resolve()),
     "editor": os.environ.get("EDITOR", "vim"),
 }
 if NOTES_CONFIG_FILE.is_file():
@@ -103,9 +103,9 @@ def more(key: str, value: str, sep: str = "\n"):
     if not note_file.exists():
         note_file.write_text(value)
     else:
-        with note_file.open("a") as note_file:
-            note_file.write(sep)
-            note_file.write(value)
+        with note_file.open("a") as note_file_handle:
+            note_file_handle.write(sep)
+            note_file_handle.write(value)
 
 
 @app.command()
