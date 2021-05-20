@@ -44,14 +44,14 @@ def note_value(key: str) -> str:
 def before():
     run_before = NOTES_CONFIG.get("before", "")
     if run_before:
-        call(run_before, shell=True, cwd=NOTE_PATH, stdout=DEVNULL, stderr=DEVNULL)
+        call(run_before, cwd=NOTE_PATH, stdout=DEVNULL, stderr=DEVNULL)
 
 
 @lru_cache()
 def after():
     run_after = NOTES_CONFIG.get("after", "")
     if run_after:
-        call(run_after, shell=True, cwd=NOTE_PATH, stdout=DEVNULL, stderr=DEVNULL)
+        call(run_after, cwd=NOTE_PATH, stdout=DEVNULL, stderr=DEVNULL)
 
 
 @app.command()
@@ -59,7 +59,7 @@ def after():
 def sync():
     sync = NOTES_CONFIG.get("sync", "")
     if sync:
-        call(sync, shell=True, cwd=NOTE_PATH, stdout=DEVNULL, stderr=DEVNULL)
+        call(sync, cwd=NOTE_PATH, stdout=DEVNULL, stderr=DEVNULL)
     else:
         before()
         after()

@@ -14,7 +14,6 @@ rich = "^10.1.0"
 
 [tool.poetry.dev-dependencies]
 vulture = "^1.0"
-bandit = "^1.6"
 safety = "^1.8"
 isort = "^5.3"
 flake8-bugbear = "^19.8"
