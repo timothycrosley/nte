@@ -161,8 +161,7 @@ def done(task: str, key: str = "TODOS", create: bool = False):
         overwrite=True,
     )
 
-
-#@app.command("clear-completed")
+@app.command("clear-completed")
 @app.command()
 @configured_environment
 def clear_done(key: str = "TODOS"):
