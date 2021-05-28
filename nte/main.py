@@ -44,14 +44,14 @@ def note_value(key: str) -> str:
 def before():
     run_before = NOTES_CONFIG.get("before", "")
     if run_before:
-        call(run_before, cwd=NOTE_PATH, stdout=DEVNULL, stderr=DEVNULL)
+        call(run_before, cwd=NOTE_PATH, stdout=DEVNULL, stderr=DEVNULL, shell=True)
 
 
 @lru_cache()
 def after():
     run_after = NOTES_CONFIG.get("after", "")
     if run_after:
-        call(run_after, cwd=NOTE_PATH, stdout=DEVNULL, stderr=DEVNULL)
+        call(run_after, cwd=NOTE_PATH, stdout=DEVNULL, stderr=DEVNULL, shell=True)
 
 
 @app.command()
@@ -59,7 +59,7 @@ def after():
 def sync():
     sync = NOTES_CONFIG.get("sync", "")
     if sync:
-        call(sync, cwd=NOTE_PATH, stdout=DEVNULL, stderr=DEVNULL)
+        call(sync, cwd=NOTE_PATH, stdout=DEVNULL, stderr=DEVNULL, shell=True)
     else:
         before()
         after()
@@ -162,6 +162,7 @@ def done(task: str, key: str = "TODOS", create: bool = False):
     )
 
 
+#@app.command("clear-completed")
 @app.command()
 @configured_environment
 def clear_done(key: str = "TODOS"):
