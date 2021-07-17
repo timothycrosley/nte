@@ -151,6 +151,7 @@ def done(task: str, key: str = "TODOS", create: bool = False):
     if f"- [ ] {task}" not in existing_todos:
         if create:
             todo(task, key=key)
+            existing_todos = note_value(key)
         else:
             sys.exit(
                 f"No task called {task} exists. To create it while marking it done use --create."
@@ -256,6 +257,11 @@ def ls():
 @configured_environment
 def event(key: str, details: str = ""):
     more(f"{key}_events", value=f"- *{NOW}* {details}".rstrip())
+
+
+@app.command()
+def record(key: str, details: str):
+    event(key=key, details=details)
 
 
 @app.command()
